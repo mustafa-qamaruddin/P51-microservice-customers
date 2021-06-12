@@ -26,4 +26,8 @@ public class TestKafkaConsumer {
     public void resetLatch() {
         latch = new CountDownLatch(1);
     }
+
+    public void setLatch(int count) {
+        latch = new CountDownLatch(count);
+    }
 }

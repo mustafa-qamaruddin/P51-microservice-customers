@@ -45,13 +45,12 @@ class CustomerServiceTest {
     @AfterAll
     private void removeUsers() {
         customerRepository.deleteAll();
+        testTimelineKafkaConsumer.resetLatch();
+        testTimelineKafkaConsumer.resetLatch();
     }
 
     @Test
     void createEmployer() {
-        testTimelineKafkaConsumer.resetLatch();
-        testTimelineKafkaConsumer.resetLatch();
-
         var employer = new Customer();
         employer.setEmail(TEST_EMAIL_EMPLOYER);
         var customer = customerService.createEmployer(employer);
@@ -64,14 +63,14 @@ class CustomerServiceTest {
         assertEquals(testTimelineKafkaConsumer.getTimelineDTO().getEmployer(), employerId);
         assertEquals(testTimelineKafkaConsumer.getTimelineDTO().getTimeline(), timelineId);
 
-        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().getEmployer(), employerId);
-        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().getEmployee(), employerId);
-        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().getTimeline(), timelineId);
+        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getEmployer(), employerId);
+        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getEmployee(), employerId);
+        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getTimeline(), timelineId);
     }
 
     private void verifyCountDown(TestKafkaConsumer consumer) {
         try {
-            consumer.getLatch().await(10000, TimeUnit.MILLISECONDS);
+            consumer.getLatch().await(50000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -80,8 +79,7 @@ class CustomerServiceTest {
 
     @Test
     void createEmployee() {
-        testMembershipKafkaConsumer.resetLatch();
-
+        testMembershipKafkaConsumer.setLatch(2);
         var employer = new Customer();
         employer.setEmail(TEST_EMAIL_EMPLOYER);
         var customer = customerService.createEmployer(employer);
@@ -98,9 +96,9 @@ class CustomerServiceTest {
 
         verifyCountDown(testMembershipKafkaConsumer);
 
-        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().getEmployer(), employerId);
-        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().getTimeline(), timelineId);
-        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().getEmployee(), employeeId);
-
+        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getTimeline(), timelineId);
+        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getEmployer(), employerId);
+        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(1).getTimeline(), timelineId);
+        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(1).getEmployer(), employerId);
     }
 }
