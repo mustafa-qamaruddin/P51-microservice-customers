@@ -55,4 +55,8 @@ public class Customer {
     public void setTimeline(String timeline) {
         this.timeline = timeline;
     }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

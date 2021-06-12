@@ -1,19 +1,20 @@
 package com.mqubits.customers.services;
 
 import com.mqubits.customers.models.Customer;
+import com.mqubits.customers.models.dto.MembershipDTO;
+import com.mqubits.customers.models.dto.TimelineDTO;
 import com.mqubits.customers.repositories.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @Component
 public class CustomerService {
 
-    private final String TOPIC_TIMELINE = "create-timeline";
-    private final String TOPIC_MEMBERSHIP = "create-membership";
+    public final static String TOPIC_TIMELINE = "create-timeline";
+    public final static String TOPIC_MEMBERSHIP = "create-membership";
 
     @Autowired
     protected CustomerRepository customerRepository;
@@ -26,15 +27,12 @@ public class CustomerService {
         // Create customer
         customer.setTimeline(timelineUUID);
         var ret = customerRepository.save(customer);
-        var payload = Map.of(
-                "employer", ret.getId(),
-                "timeline", timelineUUID,
-                "employee", ret.getId()
-        );
         // Customer Service notifies Timeline Service with New Employer ID + UUID Timeline ID
-        kafkaProducer.send(TOPIC_TIMELINE, payload);
-        // Customer Service notifies Membership Service with New Employer ID + UUID Timeline ID
-        kafkaProducer.send(TOPIC_MEMBERSHIP, payload);
+        var timelineDto = new TimelineDTO(ret.getId(), timelineUUID);
+        kafkaProducer.send(TOPIC_TIMELINE, timelineDto);
+        // Customer Service notifies Membership Service with New Employer ID + UUID Timeline ID + Employee ID
+        var membershipDto = new MembershipDTO(ret.getId(), ret.getId(), timelineUUID);
+        kafkaProducer.send(TOPIC_MEMBERSHIP, membershipDto);
         return ret;
     }
 
@@ -44,13 +42,9 @@ public class CustomerService {
             var timeline = employer.getTimeline();
             // Create Employee
             var ret = customerRepository.save(employee);
-            var payload = Map.of(
-                    "employer", employer.getId(),
-                    "timeline", timeline,
-                    "employee", ret.getId()
-            );
             // Customer Service notifies Membership Service with New Employee ID + Employer ID + Timeline ID
-            kafkaProducer.send(TOPIC_MEMBERSHIP, payload);
+            var membershipDto = new MembershipDTO(employer.getId(), ret.getId(), timeline);
+            kafkaProducer.send(TOPIC_MEMBERSHIP, membershipDto);
             return Optional.of(ret);
         }
         return Optional.empty();
