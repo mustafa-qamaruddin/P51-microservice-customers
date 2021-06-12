@@ -3,11 +3,12 @@ package com.mqubits.customers.models;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.validator.constraints.UniqueElements;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
 @Entity
@@ -30,9 +31,11 @@ public class Customer {
     private Timestamp updatedAt;
 
     @Email
-    @NotNull
-    @UniqueElements
+    @Column(unique = true)
     private String email;
+
+    public Customer() {
+    }
 
     public Customer(String email) {
         this.email = email;

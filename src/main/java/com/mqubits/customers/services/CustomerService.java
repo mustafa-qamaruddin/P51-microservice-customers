@@ -13,6 +13,8 @@ public class CustomerService {
 
     public Customer createEmployer(Customer customer) {
         var ret = customerRepository.save(customer);
+        // Customer Service notifies Timeline Service with New Employer ID + UUID Timeline ID
+        // Customer Service notifies Membership Service with New Employer ID + UUID Timeline ID
         return ret;
     }
 }
