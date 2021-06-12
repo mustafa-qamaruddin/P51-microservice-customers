@@ -15,3 +15,10 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
+  kafka:
+    bootstrap-servers: kafka-release.emmet-brown.svc.cluster.local:9092
+    batch:
+      size: 1
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer

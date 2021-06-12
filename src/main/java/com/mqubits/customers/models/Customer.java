@@ -34,10 +34,25 @@ public class Customer {
     @Column(unique = true)
     private String email;
 
+    private String timeline;
+
     public Customer() {
     }
 
-    public Customer(String email) {
+    public Customer(String email, String timeline) {
         this.email = email;
+        this.timeline = timeline;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getTimeline() {
+        return timeline;
+    }
+
+    public void setTimeline(String timeline) {
+        this.timeline = timeline;
     }
 }
