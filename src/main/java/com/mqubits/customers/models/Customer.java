@@ -13,13 +13,13 @@ import java.sql.Timestamp;
 @Entity
 public class Customer {
     @Id
-    @GeneratedValue(generator = "UUID")
+    @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(
-            name = "UUID",
+            name = "system-uuid",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
-    @Column(name = "id", updatable = false, nullable = false)
-    private Long id;
+    @Column(name = "id", updatable = false, nullable = false, unique = true)
+    private String id;
 
     @Column(name = "`created_at`")
     @CreationTimestamp

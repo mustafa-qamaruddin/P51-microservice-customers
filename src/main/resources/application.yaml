@@ -1,3 +1,14 @@
 server:
   servlet:
     context-path: /starlighter/api/v1
+spring:
+  h2:
+    console:
+      enabled: false
+  datasource:
+    url: jdbc:h2:file:./customers
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
