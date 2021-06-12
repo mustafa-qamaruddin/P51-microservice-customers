@@ -22,4 +22,8 @@ public class TestKafkaConsumer {
     public void setPayload(String payload) {
         this.payload = payload;
     }
+
+    public void resetLatch() {
+        latch = new CountDownLatch(1);
+    }
 }
