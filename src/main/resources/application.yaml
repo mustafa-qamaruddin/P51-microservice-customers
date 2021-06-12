@@ -17,6 +17,7 @@ spring:
       ddl-auto: update
   kafka:
     bootstrap-servers: kafka-release.emmet-brown.svc.cluster.local:9092
+    retries: 1
     batch:
       size: 1
     producer:
