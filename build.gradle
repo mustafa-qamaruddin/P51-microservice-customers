@@ -1,3 +1,12 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
+    }
+}
+
 plugins {
     id 'org.springframework.boot' version '2.5.1'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
@@ -28,3 +37,6 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'java'
