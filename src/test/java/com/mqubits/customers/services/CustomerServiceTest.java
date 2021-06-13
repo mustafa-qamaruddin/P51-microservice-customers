@@ -2,7 +2,6 @@ package com.mqubits.customers.services;
 
 import com.mqubits.customers.models.Customer;
 import com.mqubits.customers.repositories.CustomerRepository;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -23,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DirtiesContext
 @EmbeddedKafka(partitions = 1, brokerProperties = {"listeners=PLAINTEXT://localhost:9092", "port=9092"})
 @ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class CustomerServiceTest {
 
     private final String TEST_EMAIL_EMPLOYER = "martin-mcfly@gmail.com";
@@ -42,32 +41,8 @@ class CustomerServiceTest {
     TestMembershipKafkaConsumer testMembershipKafkaConsumer;
 
     @BeforeEach
-    @AfterAll
     private void removeUsers() {
         customerRepository.deleteAll();
-        testTimelineKafkaConsumer.resetLatch();
-        testTimelineKafkaConsumer.resetLatch();
-        testMembershipKafkaConsumer.getMembershipDTO().clear();
-    }
-
-    @Test
-    void createEmployer() {
-        var employer = new Customer();
-        employer.setEmail(TEST_EMAIL_EMPLOYER);
-        var customer = customerService.createEmployer(employer);
-        var employerId = customer.getId();
-        var timelineId = customer.getTimeline();
-
-        verifyCountDown(testTimelineKafkaConsumer);
-        verifyCountDown(testMembershipKafkaConsumer);
-
-        assertEquals(testTimelineKafkaConsumer.getTimelineDTO().getEmployer(), employerId);
-        assertEquals(testTimelineKafkaConsumer.getTimelineDTO().getTimeline(), timelineId);
-
-        assertNotEquals(testMembershipKafkaConsumer.getMembershipDTO().size(), 0);
-        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getEmployer(), employerId);
-        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getEmployee(), employerId);
-        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getTimeline(), timelineId);
     }
 
     private void verifyCountDown(TestKafkaConsumer consumer) {
@@ -80,8 +55,10 @@ class CustomerServiceTest {
     }
 
     @Test
-    void createEmployee() {
+    void canSendDTOs() {
+        testMembershipKafkaConsumer.getMembershipDTO().clear();
         testMembershipKafkaConsumer.setLatch(2);
+
         var employer = new Customer();
         employer.setEmail(TEST_EMAIL_EMPLOYER);
         var customer = customerService.createEmployer(employer);
@@ -96,7 +73,14 @@ class CustomerServiceTest {
 
         var employeeId = ((Customer) createdEmployee.get()).getId();
 
+        verifyCountDown(testTimelineKafkaConsumer);
+
+        assertEquals(testTimelineKafkaConsumer.getTimelineDTO().getEmployer(), employerId);
+        assertEquals(testTimelineKafkaConsumer.getTimelineDTO().getTimeline(), timelineId);
+
         verifyCountDown(testMembershipKafkaConsumer);
+
+        assertEquals(testMembershipKafkaConsumer.getMembershipDTO().size(), 2);
 
         assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getTimeline(), timelineId);
         assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getEmployer(), employerId);
