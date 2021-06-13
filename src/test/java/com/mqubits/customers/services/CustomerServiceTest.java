@@ -12,12 +12,12 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @DirtiesContext
@@ -47,6 +47,7 @@ class CustomerServiceTest {
         customerRepository.deleteAll();
         testTimelineKafkaConsumer.resetLatch();
         testTimelineKafkaConsumer.resetLatch();
+        testMembershipKafkaConsumer.getMembershipDTO().clear();
     }
 
     @Test
@@ -63,6 +64,7 @@ class CustomerServiceTest {
         assertEquals(testTimelineKafkaConsumer.getTimelineDTO().getEmployer(), employerId);
         assertEquals(testTimelineKafkaConsumer.getTimelineDTO().getTimeline(), timelineId);
 
+        assertNotEquals(testMembershipKafkaConsumer.getMembershipDTO().size(), 0);
         assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getEmployer(), employerId);
         assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getEmployee(), employerId);
         assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getTimeline(), timelineId);
@@ -70,9 +72,9 @@ class CustomerServiceTest {
 
     private void verifyCountDown(TestKafkaConsumer consumer) {
         try {
-            consumer.getLatch().await(50000, TimeUnit.MILLISECONDS);
+            consumer.getLatch().await(59, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            consumer.resetLatch();
         }
         assertThat(consumer.getLatch().getCount(), equalTo(0L));
     }
@@ -100,5 +102,10 @@ class CustomerServiceTest {
         assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getEmployer(), employerId);
         assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(1).getTimeline(), timelineId);
         assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(1).getEmployer(), employerId);
+
+        assertTrue(
+                Objects.equals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getEmployee(), employeeId)
+                        || Objects.equals(testMembershipKafkaConsumer.getMembershipDTO().get(1).getEmployee(), employeeId)
+        );
     }
 }
