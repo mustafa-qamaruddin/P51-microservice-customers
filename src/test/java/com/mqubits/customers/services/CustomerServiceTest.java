@@ -56,15 +56,18 @@ class CustomerServiceTest {
 
     @Test
     void canSendDTOs() {
+        // clear queues
         testMembershipKafkaConsumer.getMembershipDTO().clear();
         testMembershipKafkaConsumer.setLatch(2);
 
+        // create employer
         var employer = new Customer();
         employer.setEmail(TEST_EMAIL_EMPLOYER);
         var customer = customerService.createEmployer(employer);
         var employerId = customer.getId();
         var timelineId = customer.getTimeline();
 
+        // create employee
         var employee = new Customer();
         employee.setEmail(TEST_EMAIL_EMPLOYEE);
         var createdEmployee = customerService.createEmployee(employee, employerId);
@@ -73,13 +76,17 @@ class CustomerServiceTest {
 
         var employeeId = ((Customer) createdEmployee.get()).getId();
 
+        // wait until at least one message is received in kafka
         verifyCountDown(testTimelineKafkaConsumer);
 
+        // verify message of timeline notifications
         assertEquals(testTimelineKafkaConsumer.getTimelineDTO().getEmployer(), employerId);
         assertEquals(testTimelineKafkaConsumer.getTimelineDTO().getTimeline(), timelineId);
 
+        // wait until at least one message is received in kafka
         verifyCountDown(testMembershipKafkaConsumer);
 
+        // verify message of timeline notifications
         assertEquals(testMembershipKafkaConsumer.getMembershipDTO().size(), 2);
 
         assertEquals(testMembershipKafkaConsumer.getMembershipDTO().get(0).getTimeline(), timelineId);
