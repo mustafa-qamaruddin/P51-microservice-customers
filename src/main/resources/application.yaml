@@ -22,7 +22,6 @@ spring:
       retries: 3
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    properties:
       delivery-timeout-ms: 240000
       max-block-ms: 480000
       request-timeout-ms: 120000
