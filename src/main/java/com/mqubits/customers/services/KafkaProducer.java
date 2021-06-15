@@ -17,6 +17,6 @@ public class KafkaProducer {
 
     public void send(String topic, Object payload) {
         LOGGER.info("sending payload='{}' to topic='{}'", payload, topic);
-        kafkaTemplate.send(topic, payload);
+        var result = kafkaTemplate.send(topic, payload);
     }
 }

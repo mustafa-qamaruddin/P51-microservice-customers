@@ -17,8 +17,13 @@ spring:
       ddl-auto: update
   kafka:
     bootstrap-servers: kafka-release.emmet-brown.svc.cluster.local:9092
-    retries: 1
-    batch-size: 1
     producer:
+      batch-size: 0
+      retries: 3
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      delivery-timeout-ms : 240000
+      max-block-ms : 480000
+      request-timeout-ms : 120000
+      transaction-timeout-ms : 120000
+      transaction-max-timeout-ms : 240000
